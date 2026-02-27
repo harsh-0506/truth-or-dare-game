@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Truth or Dare</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        input, button { padding: 10px; font-size: 16px; margin: 5px; }
+        #myDaresList { list-style-type: none; padding: 0; }
+        #myDaresList li { background: #eee; margin: 5px auto; padding: 10px; width: 80%; max-width: 300px; border-radius: 5px;}
+        #currentDareDisplay { color: #d32f2f; margin: 30px; padding: 20px; border: 2px dashed #d32f2f; border-radius: 10px; font-size: 24px;}
+    </style>
+</head>
+<body>
+    <h1>Truth or Dare!</h1>
+
+    <div id="lobby">
+        <button onclick="createGame()">Create Game</button><br><br>
+        <p>OR</p>
+        <input type="text" id="roomCodeInput" placeholder="Enter Room Code">
+        <button onclick="joinGame()">Join Game</button>
+    </div>
+
+    <div id="setupArea" style="display:none;">
+        <h2>Room: <span id="displayRoomCode"></span></h2>
+        <h3 id="statusMessage">Friend joined! Add your dares.</h3>
+        
+        <input type="text" id="dareInput" placeholder="Type a dare here...">
+        <button onclick="addDare()">Add to List</button>
+        <ul id="myDaresList"></ul>
+        
+        <button onclick="sendDaresToServer()" style="background-color: lightgreen; font-weight: bold;">I'm Ready!</button>
+    </div>
+
+    <div id="gameArena" style="display:none;">
+        <h2 id="turnDisplay">Loading game...</h2>
+        
+        <div id="activePlayerControls" style="display:none;">
+            <button onclick="requestDare()" style="background-color: #2196F3; color: white; padding: 15px; font-size: 20px; border-radius: 10px;">Give me a Dare!</button>
+        </div>
+
+        <div id="currentDareDisplay" style="display:none;"></div>
+
+        <div id="endTurnControls" style="display:none;">
+            <button onclick="endTurn()" style="background-color: #4CAF50; color: white; padding: 15px;">I did it! Next Turn</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(); 
+        let myLocalDares = []; 
+        let isMyTurn = false; // Tracks if it is currently your turn
+
+        function createGame() { socket.emit('createRoom'); }
+        function joinGame() { socket.emit('joinRoom', document.getElementById('roomCodeInput').value); }
+
+        socket.on('roomCreated', (code) => {
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('setupArea').style.display = 'block';
+            document.getElementById('displayRoomCode').innerText = code;
+            document.getElementById('statusMessage').innerText = "Waiting for friend...";
+        });
+
+        socket.on('gameReady', () => {
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('setupArea').style.display = 'block';
+            document.getElementById('statusMessage').innerText = "Friend joined! Add your dares.";
+        });
+
+        function addDare() {
+            const input = document.getElementById('dareInput');
+            if(input.value !== "") {
+                myLocalDares.push(input.value); 
+                const li = document.createElement('li');
+                li.innerText = input.value;
+                document.getElementById('myDaresList').appendChild(li);
+                input.value = ""; 
+            }
+        }
+
+        function sendDaresToServer() {
+            if(myLocalDares.length === 0) return alert("Add at least one dare first!");
+            socket.emit('submitDares', myLocalDares); 
+            document.getElementById('statusMessage').innerText = "Waiting for your friend to finish...";
+        }
+
+        socket.on('startActualGame', () => {
+            document.getElementById('setupArea').style.display = 'none';
+            document.getElementById('gameArena').style.display = 'block';
+        });
+
+        // --- NEW CODE: THE GAMEPLAY LOOP ---
+
+        // 1. The referee tells us whose turn it is
+        socket.on('updateTurn', (activePlayerId) => {
+            document.getElementById('currentDareDisplay').style.display = 'none'; // Hide old dare
+            document.getElementById('endTurnControls').style.display = 'none'; // Hide next button
+            
+            // Check if the referee called OUR walkie-talkie ID
+            if (socket.id === activePlayerId) {
+                isMyTurn = true;
+                document.getElementById('turnDisplay').innerText = "It is YOUR turn!";
+                document.getElementById('activePlayerControls').style.display = 'block'; // Show "Give me a dare"
+            } else {
+                isMyTurn = false;
+                document.getElementById('turnDisplay').innerText = "Waiting for your friend to play...";
+                document.getElementById('activePlayerControls').style.display = 'none'; 
+            }
+        });
+
+        // 2. We ask the referee for a dare
+        function requestDare() {
+            socket.emit('getDare');
+        }
+
+        // 3. The referee blasts the chosen dare to BOTH screens
+        socket.on('showDare', (dareText) => {
+            document.getElementById('activePlayerControls').style.display = 'none'; // Hide the request button
+            const displayBox = document.getElementById('currentDareDisplay');
+            displayBox.innerText = dareText;
+            displayBox.style.display = 'block'; // Show the dare text
+
+            // Only the player whose turn it is gets the "Next Turn" button
+            if (isMyTurn) {
+                document.getElementById('endTurnControls').style.display = 'block';
+            }
+        });
+
+        // 4. We tell the referee we finished the dare
+        function endTurn() {
+            socket.emit('nextTurn');
+        }
+
+        // 5. Game Over logic
+        socket.on('gameOver', () => {
+            document.getElementById('turnDisplay').innerText = "Game Over! You ran out of dares.";
+            document.getElementById('activePlayerControls').style.display = 'none';
+            document.getElementById('endTurnControls').style.display = 'none';
+            document.getElementById('currentDareDisplay').style.display = 'none';
+        });
+
+    </script>
+</body>
+</html>
