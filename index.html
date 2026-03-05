@@ -2,113 +2,56 @@
 <html>
 <head>
     <title>Truth or Dare</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-        /* body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        input, button { padding: 10px; font-size: 16px; margin: 5px; }
-        #myDaresList { list-style-type: none; padding: 0; }
-        #myDaresList li { background: #eee; margin: 5px auto; padding: 10px; width: 80%; max-width: 300px; border-radius: 5px;}
-        #currentDareDisplay { color: #d32f2f; margin: 30px; padding: 20px; border: 2px dashed #d32f2f; border-radius: 10px; font-size: 24px;} */
-        /* 1. The Main Background and Text */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #121212; /* Sleek dark mode */
-            color: #ffffff; 
-            text-align: center; 
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 90vh;
-        }
+        /* Base Styles */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; text-align: center; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 90vh; overflow-x: hidden; }
+        h1 { color: #ff4757; font-size: 40px; margin-top: 30px; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        h2, h3, p { color: #f1f2f6; }
 
-        h1 {
-            color: #ff4757; /* Bright red title */
-            font-size: 40px;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
+        input, select, textarea { padding: 15px; font-size: 16px; margin: 10px; border: none; border-radius: 15px; width: 80%; max-width: 300px; outline: none; background-color: #ffffff; font-family: inherit; }
+        input, select { text-align: center; border-radius: 25px; }
+        textarea { text-align: left; min-height: 150px; resize: vertical; line-height: 1.5; }
 
-        h2, h3 { color: #f1f2f6; }
+        button { padding: 15px 30px; font-size: 18px; font-weight: bold; margin: 10px; border: none; border-radius: 25px; cursor: pointer; background-color: #1e90ff; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
+        button[onclick="sendDaresToServer()"] { background-color: #2ed573; margin-top: 15px;} 
+        button[onclick="requestDare()"] { background-color: #ffa502; font-size: 22px; padding: 15px 40px;} 
+        button[onclick="endTurn()"] { background-color: #2ed573; margin-top: 20px;} 
 
-        /* 2. The Inputs (Text boxes) */
-        input { 
-            padding: 15px; 
-            font-size: 16px; 
-            margin: 10px; 
-            border: none;
-            border-radius: 25px;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-            outline: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
+        /* 3D CARD ANIMATION */
+        .card-container { position: relative; width: 280px; height: 380px; perspective: 1000px; margin: 20px auto; display: none; }
+        .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; z-index: 5; }
+        .card-container.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .card-front { background: repeating-linear-gradient(45deg, #2f3542, #2f3542 15px, #1e272e 15px, #1e272e 30px); color: #ffffff; font-size: 80px; border: 8px solid #ffffff; }
+        .card-back { background-color: #ffffff; color: #ff4757; transform: rotateY(180deg); font-size: 26px; font-weight: bold; border: 8px solid #ff4757; }
 
-        /* 3. The Buttons */
-        button { 
-            padding: 15px 30px; 
-            font-size: 18px; 
-            font-weight: bold;
-            margin: 10px; 
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            background-color: #1e90ff; /* Bright blue */
-            color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: transform 0.1s, background-color 0.2s;
-        }
-
-        button:active {
-            transform: scale(0.95); /* Makes the button "squish" when tapped */
-        }
-
-        /* Specific Button Colors */
-        button[onclick="sendDaresToServer()"] { background-color: #2ed573; } /* Green Ready Button */
-        button[onclick="requestDare()"] { background-color: #ffa502; font-size: 22px; padding: 20px 40px;} /* Huge Orange Dare Button */
-        button[onclick="endTurn()"] { background-color: #2ed573; } /* Green Next Button */
-
-        /* 4. The Dares List */
-        #myDaresList { 
-            list-style-type: none; 
-            padding: 0; 
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #myDaresList li { 
-            background: #2f3542; 
-            margin: 5px 0; 
-            padding: 15px; 
-            width: 90%; 
-            max-width: 300px; 
-            border-radius: 10px;
-            font-size: 16px;
-        }
-
-        /* 5. The Active Dare Display */
-        #currentDareDisplay { 
-            color: #ffffff; 
-            background-color: #ff4757;
-            margin: 30px 10px; 
-            padding: 30px; 
-            border-radius: 15px; 
-            font-size: 28px;
-            font-weight: bold;
-            box-shadow: 0 8px 15px rgba(255, 71, 87, 0.4);
-        }
+        /* SHUFFLE ANIMATION */
+        .dummy-card { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 1; opacity: 0; background: repeating-linear-gradient(45deg, #2f3542, #2f3542 15px, #1e272e 15px, #1e272e 30px); border: 8px solid #ffffff; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .shuffling .dummy-card { opacity: 1; }
+        .shuffling .dummy-1 { animation: shuffle1 0.4s ease-in-out infinite; }
+        .shuffling .dummy-2 { animation: shuffle2 0.4s ease-in-out infinite 0.1s; }
+        .shuffling .dummy-3 { animation: shuffle3 0.4s ease-in-out infinite 0.2s; }
+        @keyframes shuffle1 { 50% { transform: translate(-60px, -20px) rotate(-15deg); z-index: 6; } }
+        @keyframes shuffle2 { 50% { transform: translate(60px, 10px) rotate(15deg); z-index: 6; } }
+        @keyframes shuffle3 { 50% { transform: translate(-40px, 30px) rotate(-5deg); z-index: 6; } }
     </style>
 </head>
 <body>
     <h1>Truth or Dare!</h1>
 
     <div id="lobby">
-        <button onclick="createGame()">Create Game</button><br><br>
+        <input type="text" id="playerNameInput" placeholder="Enter your Name" required>
+        <br>
+        <p>Choose your rules:</p>
+        <select id="gameMode">
+            <option value="combined">Mode 1: Mixed Dares (Combined)</option>
+            <option value="opponent">Mode 2: Opponent's Dares Only (1v1)</option>
+        </select>
+        <br>
+        <button onclick="createGame()">Create Game</button>
+        <br><br>
         <p>OR</p>
         <input type="text" id="roomCodeInput" placeholder="Enter Room Code">
         <button onclick="joinGame()">Join Game</button>
@@ -116,65 +59,93 @@
 
     <div id="setupArea" style="display:none;">
         <h2>Room: <span id="displayRoomCode"></span></h2>
-        <h3 id="statusMessage">Friend joined! Add your dares.</h3>
+        <h3 id="statusMessage">Waiting for friend...</h3>
         
-        <input type="text" id="dareInput" placeholder="Type a dare here...">
-        <button onclick="addDare()">Add to List</button>
-        <ul id="myDaresList"></ul>
-        
-        <button onclick="sendDaresToServer()" style="background-color: lightgreen; font-weight: bold;">I'm Ready!</button>
+        <p style="font-size: 14px; color: #a4b0be;">Press <strong>Enter</strong> to start a new line for each dare.</p>
+        <textarea id="dareInputArea" placeholder="Sing a song&#10;Do 10 pushups&#10;Call your crush"></textarea>
+        <br>
+        <button id="readyBtn" onclick="sendDaresToServer()">I'm Ready!</button>
     </div>
 
     <div id="gameArena" style="display:none;">
         <h2 id="turnDisplay">Loading game...</h2>
         
         <div id="activePlayerControls" style="display:none;">
-            <button onclick="requestDare()" style="background-color: #2196F3; color: white; padding: 15px; font-size: 20px; border-radius: 10px;">Give me a Dare!</button>
+            <button onclick="requestDare()">Draw a Dare!</button>
         </div>
 
-        <div id="currentDareDisplay" style="display:none;"></div>
+        <div id="cardArea" class="card-container">
+            <div class="dummy-card dummy-1"></div>
+            <div class="dummy-card dummy-2"></div>
+            <div class="dummy-card dummy-3"></div>
+            <div class="card-inner" id="cardInner">
+                <div class="card-front">?</div>
+                <div class="card-back" id="dareTextDisplay"></div>
+            </div>
+        </div>
 
         <div id="endTurnControls" style="display:none;">
-            <button onclick="endTurn()" style="background-color: #4CAF50; color: white; padding: 15px;">I did it! Next Turn</button>
+            <button onclick="endTurn()">I did it! Next Turn</button>
+        </div>
+
+        <div id="extraDareSection" style="margin-top: 40px; border-top: 1px solid #2f3542; padding-top: 20px; width: 100%; max-width: 400px;">
+            <p style="font-size: 14px; color: #a4b0be; margin-bottom: 5px;">Forgot one? Secretly add a dare to the deck!</p>
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <input type="text" id="extraDareInput" placeholder="Sneaky dare..." style="width: 60%; margin: 5px; border-radius: 15px; padding: 10px;">
+                <button onclick="addExtraDare()" style="padding: 10px 20px; font-size: 14px; background-color: #8e44ad; margin: 5px;">Add</button>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io(); 
-        let myLocalDares = []; 
-        let isMyTurn = false; // Tracks if it is currently your turn
+        let isMyTurn = false; 
 
-        function createGame() { socket.emit('createRoom'); }
-        function joinGame() { socket.emit('joinRoom', document.getElementById('roomCodeInput').value); }
+        // NEW: Load the Sound Effects
+        const shuffleAudio = new Audio('shuffle.mp3');
+        const flipAudio = new Audio('flip.mp3');
+
+        function createGame() { 
+            const mode = document.getElementById('gameMode').value;
+            const name = document.getElementById('playerNameInput').value;
+            if(!name) return alert("Please enter your name first!");
+            socket.emit('createRoom', { mode: mode, name: name }); 
+        }
+        
+        function joinGame() { 
+            const roomCode = document.getElementById('roomCodeInput').value.toUpperCase();
+            const name = document.getElementById('playerNameInput').value;
+            if(!name || !roomCode) return alert("Please enter your name and a Room Code!");
+            socket.emit('joinRoom', { roomCode: roomCode, name: name }); 
+        }
 
         socket.on('roomCreated', (code) => {
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
             document.getElementById('displayRoomCode').innerText = code;
-            document.getElementById('statusMessage').innerText = "Waiting for friend...";
         });
 
-        socket.on('gameReady', () => {
+        // NEW: Show the actual opponent's name when they join
+        socket.on('gameReady', (playerNames) => {
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
-            document.getElementById('statusMessage').innerText = "Friend joined! Add your dares.";
+            
+            const myName = document.getElementById('playerNameInput').value;
+            const allNames = Object.values(playerNames);
+            const opponentName = allNames.find(n => n !== myName) || "Your friend";
+            
+            document.getElementById('statusMessage').innerText = `${opponentName} joined! Add your dares.`;
         });
 
-        function addDare() {
-            const input = document.getElementById('dareInput');
-            if(input.value !== "") {
-                myLocalDares.push(input.value); 
-                const li = document.createElement('li');
-                li.innerText = input.value;
-                document.getElementById('myDaresList').appendChild(li);
-                input.value = ""; 
-            }
-        }
-
         function sendDaresToServer() {
-            if(myLocalDares.length === 0) return alert("Add at least one dare first!");
-            socket.emit('submitDares', myLocalDares); 
+            const rawText = document.getElementById('dareInputArea').value;
+            const processedDares = rawText.split('\n').map(dare => dare.trim()).filter(dare => dare !== "");
+            if(processedDares.length === 0) return alert("Type at least one dare before clicking ready!");
+            
+            socket.emit('submitDares', processedDares); 
+            document.getElementById('dareInputArea').disabled = true;
+            document.getElementById('readyBtn').style.display = 'none';
             document.getElementById('statusMessage').innerText = "Waiting for your friend to finish...";
         }
 
@@ -183,56 +154,86 @@
             document.getElementById('gameArena').style.display = 'block';
         });
 
-        // --- NEW CODE: THE GAMEPLAY LOOP ---
+        // NEW: Display the correct names for the turns!
+        function updateTurnUI(data) {
+            const { activePlayerId, names } = data;
+            const activeName = names[activePlayerId];
 
-        // 1. The referee tells us whose turn it is
-        socket.on('updateTurn', (activePlayerId) => {
-            document.getElementById('currentDareDisplay').style.display = 'none'; // Hide old dare
-            document.getElementById('endTurnControls').style.display = 'none'; // Hide next button
+            const cardArea = document.getElementById('cardArea');
+            cardArea.classList.remove('flipped', 'shuffling'); 
+            cardArea.style.display = 'block'; 
+            document.getElementById('endTurnControls').style.display = 'none'; 
             
-            // Check if the referee called OUR walkie-talkie ID
             if (socket.id === activePlayerId) {
                 isMyTurn = true;
-                document.getElementById('turnDisplay').innerText = "It is YOUR turn!";
-                document.getElementById('activePlayerControls').style.display = 'block'; // Show "Give me a dare"
+                document.getElementById('turnDisplay').innerText = `It is YOUR turn, ${activeName}!`;
+                document.getElementById('activePlayerControls').style.display = 'block'; 
             } else {
                 isMyTurn = false;
-                document.getElementById('turnDisplay').innerText = "Waiting for your friend to play...";
+                document.getElementById('turnDisplay').innerText = `Waiting for ${activeName} to draw...`;
                 document.getElementById('activePlayerControls').style.display = 'none'; 
             }
-        });
-
-        // 2. We ask the referee for a dare
-        function requestDare() {
-            socket.emit('getDare');
         }
 
-        // 3. The referee blasts the chosen dare to BOTH screens
-        socket.on('showDare', (dareText) => {
-            document.getElementById('activePlayerControls').style.display = 'none'; // Hide the request button
-            const displayBox = document.getElementById('currentDareDisplay');
-            displayBox.innerText = dareText;
-            displayBox.style.display = 'block'; // Show the dare text
+        socket.on('updateTurn', updateTurnUI);
 
-            // Only the player whose turn it is gets the "Next Turn" button
+        function requestDare() {
+            document.getElementById('activePlayerControls').style.display = 'none'; 
+            const cardArea = document.getElementById('cardArea');
+            cardArea.classList.add('shuffling');
+
+            // NEW: Play the shuffle sound!
+            shuffleAudio.currentTime = 0; 
+            shuffleAudio.play();
+
+            setTimeout(() => {
+                cardArea.classList.remove('shuffling');
+                socket.emit('getDare');
+            }, 1500);
+        }
+
+        socket.on('showDare', (dareText) => {
+            document.getElementById('activePlayerControls').style.display = 'none'; 
+            document.getElementById('dareTextDisplay').innerText = dareText;
+            
+            setTimeout(() => {
+                document.getElementById('cardArea').classList.add('flipped');
+                // NEW: Play the flip sound exactly when the card turns over!
+                flipAudio.currentTime = 0;
+                flipAudio.play();
+            }, 100);
+
             if (isMyTurn) {
-                document.getElementById('endTurnControls').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('endTurnControls').style.display = 'block';
+                }, 800);
             }
         });
 
-        // 4. We tell the referee we finished the dare
-        function endTurn() {
-            socket.emit('nextTurn');
-        }
+        function endTurn() { socket.emit('nextTurn'); }
 
-        // 5. Game Over logic
         socket.on('gameOver', () => {
             document.getElementById('turnDisplay').innerText = "Game Over! You ran out of dares.";
             document.getElementById('activePlayerControls').style.display = 'none';
             document.getElementById('endTurnControls').style.display = 'none';
-            document.getElementById('currentDareDisplay').style.display = 'none';
+            document.getElementById('cardArea').style.display = 'none';
         });
 
+        function addExtraDare() {
+            const input = document.getElementById('extraDareInput');
+            const newDare = input.value.trim();
+            if (newDare !== "") {
+                socket.emit('addExtraDare', newDare);
+                input.value = "";
+                alert("Secret dare added to the deck!");
+            }
+        }
+
+        socket.on('deckRestocked', (data) => {
+            if (document.getElementById('turnDisplay').innerText.includes("Game Over")) {
+                updateTurnUI(data); // Re-run the turn logic to wake the game up!
+            }
+        });
     </script>
 </body>
 </html>
