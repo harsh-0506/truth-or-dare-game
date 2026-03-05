@@ -2,12 +2,106 @@
 <html>
 <head>
     <title>Truth or Dare</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        /* body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
         input, button { padding: 10px; font-size: 16px; margin: 5px; }
         #myDaresList { list-style-type: none; padding: 0; }
         #myDaresList li { background: #eee; margin: 5px auto; padding: 10px; width: 80%; max-width: 300px; border-radius: 5px;}
-        #currentDareDisplay { color: #d32f2f; margin: 30px; padding: 20px; border: 2px dashed #d32f2f; border-radius: 10px; font-size: 24px;}
+        #currentDareDisplay { color: #d32f2f; margin: 30px; padding: 20px; border: 2px dashed #d32f2f; border-radius: 10px; font-size: 24px;} */
+        /* 1. The Main Background and Text */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #121212; /* Sleek dark mode */
+            color: #ffffff; 
+            text-align: center; 
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+        }
+
+        h1 {
+            color: #ff4757; /* Bright red title */
+            font-size: 40px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        h2, h3 { color: #f1f2f6; }
+
+        /* 2. The Inputs (Text boxes) */
+        input { 
+            padding: 15px; 
+            font-size: 16px; 
+            margin: 10px; 
+            border: none;
+            border-radius: 25px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 3. The Buttons */
+        button { 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            font-weight: bold;
+            margin: 10px; 
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background-color: #1e90ff; /* Bright blue */
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95); /* Makes the button "squish" when tapped */
+        }
+
+        /* Specific Button Colors */
+        button[onclick="sendDaresToServer()"] { background-color: #2ed573; } /* Green Ready Button */
+        button[onclick="requestDare()"] { background-color: #ffa502; font-size: 22px; padding: 20px 40px;} /* Huge Orange Dare Button */
+        button[onclick="endTurn()"] { background-color: #2ed573; } /* Green Next Button */
+
+        /* 4. The Dares List */
+        #myDaresList { 
+            list-style-type: none; 
+            padding: 0; 
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #myDaresList li { 
+            background: #2f3542; 
+            margin: 5px 0; 
+            padding: 15px; 
+            width: 90%; 
+            max-width: 300px; 
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        /* 5. The Active Dare Display */
+        #currentDareDisplay { 
+            color: #ffffff; 
+            background-color: #ff4757;
+            margin: 30px 10px; 
+            padding: 30px; 
+            border-radius: 15px; 
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 8px 15px rgba(255, 71, 87, 0.4);
+        }
     </style>
 </head>
 <body>
