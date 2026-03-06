@@ -17,6 +17,9 @@
         button[onclick="requestDare()"] { background-color: #ffa502; font-size: 22px; padding: 15px 40px;} 
         button[onclick="endTurn()"] { background-color: #2ed573; margin-top: 20px;} 
         
+        /* NEW: Styling for the Skip Button */
+        button[onclick="skipDare()"] { background-color: #ff4757; margin-top: 10px; padding: 12px 25px; font-size: 16px;} 
+        
         .card-container { position: relative; width: 280px; height: 380px; perspective: 1000px; margin: 20px auto; display: none; }
         .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; z-index: 5; }
         .card-container.flipped .card-inner { transform: rotateY(180deg); }
@@ -39,7 +42,6 @@
         .floating-emoji { position: fixed; bottom: 15%; font-size: 35px; pointer-events: none; animation: floatUp 2.5s ease-out forwards; z-index: 100; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-400px) scale(1.3); opacity: 0; } }
 
-        /* NEW: The Disconnect Warning Banner */
         #disconnectWarning { display: none; background-color: #ff4757; color: white; padding: 15px; width: 100%; position: fixed; top: 0; left: 0; font-weight: bold; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
     </style>
 </head>
@@ -90,8 +92,9 @@
             </div>
         </div>
 
-        <div id="endTurnControls" style="display:none;">
+        <div id="endTurnControls" style="display:none; flex-direction: column; align-items: center;">
             <button onclick="endTurn()">I did it! Next Turn</button>
+            <button onclick="skipDare()">Skip & Draw Again</button>
         </div>
 
         <div id="extraDareSection" style="margin-top: 30px; border-top: 1px solid #a4b0be; padding-top: 20px; width: 100%; max-width: 400px;">
@@ -119,20 +122,17 @@
         const shuffleAudio = new Audio('shuffle.mp3');
         const flipAudio = new Audio('flip.mp3');
 
-        // --- NEW: THE SECRET ID SYSTEM ---
         let mySecretId = sessionStorage.getItem('truthOrDare_SecretId');
         if (!mySecretId) {
-            mySecretId = Math.random().toString(36).substring(2, 12); // Generate random string
+            mySecretId = Math.random().toString(36).substring(2, 12); 
             sessionStorage.setItem('truthOrDare_SecretId', mySecretId);
         }
 
-        // On page load, check if we were already in a room and try to sneak back in
         const savedRoomCode = sessionStorage.getItem('truthOrDare_RoomCode');
         if (savedRoomCode) {
             socket.emit('reconnectPlayer', { roomCode: savedRoomCode, playerId: mySecretId });
         }
 
-        // --- GAME OVER MEMORY WIPE ---
         function clearMemory() {
             sessionStorage.removeItem('truthOrDare_RoomCode');
         }
@@ -152,7 +152,7 @@
         }
 
         socket.on('roomCreated', (code) => {
-            sessionStorage.setItem('truthOrDare_RoomCode', code); // Save room to memory
+            sessionStorage.setItem('truthOrDare_RoomCode', code); 
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
             document.getElementById('displayRoomCode').innerText = code;
@@ -168,7 +168,6 @@
             document.getElementById('statusMessage').innerText = `${opponentName} joined! Add your dares.`;
         });
 
-        // --- RECONNECTION RESPONSES ---
         socket.on('reconnectSuccess', (data) => {
             document.getElementById('lobby').style.display = 'none';
             if (data.gameState === 'setup') {
@@ -180,18 +179,18 @@
         });
 
         socket.on('reconnectFailed', () => {
-            clearMemory(); // Room was deleted, clear memory and stay in lobby
+            clearMemory(); 
             alert("Your previous game expired or was closed.");
         });
 
         socket.on('friendDisconnected', (name) => {
             document.getElementById('disconnectWarning').style.display = 'block';
-            document.getElementById('drawBtn').disabled = true; // Pause the game
+            document.getElementById('drawBtn').disabled = true; 
         });
 
         socket.on('friendReconnected', (name) => {
             document.getElementById('disconnectWarning').style.display = 'none';
-            document.getElementById('drawBtn').disabled = false; // Unpause the game
+            document.getElementById('drawBtn').disabled = false; 
         });
 
         socket.on('gameAbandoned', () => {
@@ -200,7 +199,7 @@
             document.getElementById('activePlayerControls').style.display = 'none';
             document.getElementById('endTurnControls').style.display = 'none';
             document.getElementById('cardArea').style.display = 'none';
-            clearMemory(); // Clean the phone's memory
+            clearMemory(); 
         });
 
         function sendDaresToServer() {
@@ -227,7 +226,6 @@
             cardArea.style.display = 'block'; 
             document.getElementById('endTurnControls').style.display = 'none'; 
             
-            // We now check against our Secret ID instead of socket.id!
             if (mySecretId === activePlayerId) {
                 isMyTurn = true;
                 document.getElementById('turnDisplay').innerText = `It is YOUR turn, ${activeName}!`;
@@ -257,6 +255,21 @@
             }, 1500);
         }
 
+        // --- NEW: THE SKIP LOGIC ---
+        function skipDare() {
+            // Hide the buttons immediately
+            document.getElementById('endTurnControls').style.display = 'none';
+            
+            // Flip the card back over to hide the old dare
+            const cardArea = document.getElementById('cardArea');
+            cardArea.classList.remove('flipped');
+
+            // Wait a split second for the card to physically flip back, then draw again!
+            setTimeout(() => {
+                requestDare(); 
+            }, 600); 
+        }
+
         socket.on('showDare', (dareText) => {
             document.getElementById('activePlayerControls').style.display = 'none'; 
             document.getElementById('dareTextDisplay').innerText = dareText;
@@ -271,7 +284,8 @@
 
             if (isMyTurn) {
                 setTimeout(() => {
-                    document.getElementById('endTurnControls').style.display = 'block';
+                    // Display BOTH buttons now
+                    document.getElementById('endTurnControls').style.display = 'flex';
                 }, 800);
             }
         });
@@ -283,7 +297,7 @@
             document.getElementById('activePlayerControls').style.display = 'none';
             document.getElementById('endTurnControls').style.display = 'none';
             document.getElementById('cardArea').style.display = 'none';
-            clearMemory(); // Game finished normally, wipe memory
+            clearMemory(); 
         });
 
         function addExtraDare() {
