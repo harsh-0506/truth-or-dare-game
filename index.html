@@ -4,12 +4,43 @@
     <title>Truth or Dare</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-        /* Base Styles */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; text-align: center; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 90vh; overflow-x: hidden; }
-        h1 { color: #ff4757; font-size: 40px; margin-top: 30px; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        h2, h3, p { color: #f1f2f6; }
+        /* --- 1. Base Styles & NEW Animated Background --- */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            
+            /* THE NEW BACKGROUND: A deep, shifting gradient */
+            background: linear-gradient(-45deg, #0d0d0d, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite; /* Slow, smooth movement */
+            
+            color: #ffffff; 
+            text-align: center; 
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 90vh;
+            overflow-x: hidden;
+        }
 
-        input, select, textarea { padding: 15px; font-size: 16px; margin: 10px; border: none; border-radius: 15px; width: 80%; max-width: 300px; outline: none; background-color: #ffffff; font-family: inherit; }
+        /* Keyframes to make the background move slowly */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 { color: #ff4757; font-size: 40px; margin-top: 30px; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        h2, h3, p { color: #f1f2f6; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Added shadow for better readability on gradient */ }
+
+        /* Inputs need a slight transparency to blend better */
+        input, select, textarea { 
+            padding: 15px; font-size: 16px; margin: 10px; border: none; border-radius: 15px; width: 80%; max-width: 300px; outline: none; 
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+            font-family: inherit; color: #121212;
+        }
         input, select { text-align: center; border-radius: 25px; }
         textarea { text-align: left; min-height: 150px; resize: vertical; line-height: 1.5; }
 
@@ -36,6 +67,13 @@
         @keyframes shuffle1 { 50% { transform: translate(-60px, -20px) rotate(-15deg); z-index: 6; } }
         @keyframes shuffle2 { 50% { transform: translate(60px, 10px) rotate(15deg); z-index: 6; } }
         @keyframes shuffle3 { 50% { transform: translate(-40px, 30px) rotate(-5deg); z-index: 6; } }
+
+        /* REACTION STYLES */
+        .reaction-btn { background: transparent; box-shadow: none; font-size: 32px; padding: 5px; margin: 0 5px; transition: transform 0.1s; cursor: pointer; border: none; }
+        .reaction-btn:hover { transform: scale(1.2); }
+        .reaction-btn:active { transform: scale(0.8); }
+        .floating-emoji { position: fixed; bottom: 15%; font-size: 35px; pointer-events: none; animation: floatUp 2.5s ease-out forwards; z-index: 100; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-400px) scale(1.3); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -60,7 +98,6 @@
     <div id="setupArea" style="display:none;">
         <h2>Room: <span id="displayRoomCode"></span></h2>
         <h3 id="statusMessage">Waiting for friend...</h3>
-        
         <p style="font-size: 14px; color: #a4b0be;">Press <strong>Enter</strong> to start a new line for each dare.</p>
         <textarea id="dareInputArea" placeholder="Sing a song&#10;Do 10 pushups&#10;Call your crush"></textarea>
         <br>
@@ -88,12 +125,20 @@
             <button onclick="endTurn()">I did it! Next Turn</button>
         </div>
 
-        <div id="extraDareSection" style="margin-top: 40px; border-top: 1px solid #2f3542; padding-top: 20px; width: 100%; max-width: 400px;">
-            <p style="font-size: 14px; color: #a4b0be; margin-bottom: 5px;">Forgot one? Secretly add a dare to the deck!</p>
+        <div id="extraDareSection" style="margin-top: 30px; border-top: 1px solid #a4b0be; padding-top: 20px; width: 100%; max-width: 400px;">
+            <p style="font-size: 14px; color: #a4b0be; margin-bottom: 5px;">Forgot one? Secretly add a dare!</p>
             <div style="display: flex; justify-content: center; align-items: center;">
                 <input type="text" id="extraDareInput" placeholder="Sneaky dare..." style="width: 60%; margin: 5px; border-radius: 15px; padding: 10px;">
                 <button onclick="addExtraDare()" style="padding: 10px 20px; font-size: 14px; background-color: #8e44ad; margin: 5px;">Add</button>
             </div>
+        </div>
+
+        <div id="reactionBar" style="margin-top: 20px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 25px; display: inline-block;">
+            <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+            <button class="reaction-btn" onclick="sendReaction('😱')">😱</button>
+            <button class="reaction-btn" onclick="sendReaction('😈')">😈</button>
+            <button class="reaction-btn" onclick="sendReaction('🔥')">🔥</button>
+            <button class="reaction-btn" onclick="sendReaction('🐔')">🐔</button>
         </div>
     </div>
 
@@ -102,7 +147,6 @@
         const socket = io(); 
         let isMyTurn = false; 
 
-        // NEW: Load the Sound Effects
         const shuffleAudio = new Audio('shuffle.mp3');
         const flipAudio = new Audio('flip.mp3');
 
@@ -126,15 +170,12 @@
             document.getElementById('displayRoomCode').innerText = code;
         });
 
-        // NEW: Show the actual opponent's name when they join
         socket.on('gameReady', (playerNames) => {
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
-            
             const myName = document.getElementById('playerNameInput').value;
             const allNames = Object.values(playerNames);
             const opponentName = allNames.find(n => n !== myName) || "Your friend";
-            
             document.getElementById('statusMessage').innerText = `${opponentName} joined! Add your dares.`;
         });
 
@@ -154,11 +195,9 @@
             document.getElementById('gameArena').style.display = 'block';
         });
 
-        // NEW: Display the correct names for the turns!
         function updateTurnUI(data) {
             const { activePlayerId, names } = data;
             const activeName = names[activePlayerId];
-
             const cardArea = document.getElementById('cardArea');
             cardArea.classList.remove('flipped', 'shuffling'); 
             cardArea.style.display = 'block'; 
@@ -182,9 +221,10 @@
             const cardArea = document.getElementById('cardArea');
             cardArea.classList.add('shuffling');
 
-            // NEW: Play the shuffle sound!
-            shuffleAudio.currentTime = 0; 
-            shuffleAudio.play();
+            if(shuffleAudio) {
+                shuffleAudio.currentTime = 0; 
+                shuffleAudio.play().catch(e => console.log("Audio play prevented"));
+            }
 
             setTimeout(() => {
                 cardArea.classList.remove('shuffling');
@@ -198,9 +238,10 @@
             
             setTimeout(() => {
                 document.getElementById('cardArea').classList.add('flipped');
-                // NEW: Play the flip sound exactly when the card turns over!
-                flipAudio.currentTime = 0;
-                flipAudio.play();
+                if(flipAudio) {
+                    flipAudio.currentTime = 0;
+                    flipAudio.play().catch(e => console.log("Audio play prevented"));
+                }
             }, 100);
 
             if (isMyTurn) {
@@ -231,8 +272,32 @@
 
         socket.on('deckRestocked', (data) => {
             if (document.getElementById('turnDisplay').innerText.includes("Game Over")) {
-                updateTurnUI(data); // Re-run the turn logic to wake the game up!
+                updateTurnUI(data); 
             }
+        });
+
+        let isReactionCooldown = false;
+        function sendReaction(emoji) {
+            if (isReactionCooldown) return; 
+            socket.emit('sendReaction', emoji);
+            isReactionCooldown = true;
+            setTimeout(() => { isReactionCooldown = false; }, 500);
+        }
+
+        socket.on('showReaction', (emoji) => {
+            const el = document.createElement('div');
+            el.innerText = emoji;
+            el.className = 'floating-emoji';
+            const isLeft = Math.random() > 0.5;
+            if (isLeft) {
+                const randomLeft = Math.floor(Math.random() * 20) + 10;
+                el.style.left = `${randomLeft}%`;
+            } else {
+                const randomRight = Math.floor(Math.random() * 20) + 70;
+                el.style.left = `${randomRight}%`;
+            }
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
         });
     </script>
 </body>
