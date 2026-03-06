@@ -4,61 +4,26 @@
     <title>Truth or Dare</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-        /* --- 1. Base Styles & NEW Animated Background --- */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            
-            /* THE NEW BACKGROUND: A deep, shifting gradient */
-            background: linear-gradient(-45deg, #0d0d0d, #1a1a2e, #16213e, #0f3460);
-            background-size: 400% 400%;
-            animation: gradientBG 20s ease infinite; /* Slow, smooth movement */
-            
-            color: #ffffff; 
-            text-align: center; 
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 90vh;
-            overflow-x: hidden;
-        }
-
-        /* Keyframes to make the background move slowly */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(-45deg, #0d0d0d, #1a1a2e, #16213e, #0f3460); background-size: 400% 400%; animation: gradientBG 20s ease infinite; color: #ffffff; text-align: center; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 90vh; overflow-x: hidden; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         h1 { color: #ff4757; font-size: 40px; margin-top: 30px; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        h2, h3, p { color: #f1f2f6; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Added shadow for better readability on gradient */ }
-
-        /* Inputs need a slight transparency to blend better */
-        input, select, textarea { 
-            padding: 15px; font-size: 16px; margin: 10px; border: none; border-radius: 15px; width: 80%; max-width: 300px; outline: none; 
-            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
-            font-family: inherit; color: #121212;
-        }
+        h2, h3, p { color: #f1f2f6; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        input, select, textarea { padding: 15px; font-size: 16px; margin: 10px; border: none; border-radius: 15px; width: 80%; max-width: 300px; outline: none; background-color: rgba(255, 255, 255, 0.9); font-family: inherit; color: #121212; }
         input, select { text-align: center; border-radius: 25px; }
         textarea { text-align: left; min-height: 150px; resize: vertical; line-height: 1.5; }
-
         button { padding: 15px 30px; font-size: 18px; font-weight: bold; margin: 10px; border: none; border-radius: 25px; cursor: pointer; background-color: #1e90ff; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s; }
         button:active { transform: scale(0.95); }
         button[onclick="sendDaresToServer()"] { background-color: #2ed573; margin-top: 15px;} 
         button[onclick="requestDare()"] { background-color: #ffa502; font-size: 22px; padding: 15px 40px;} 
         button[onclick="endTurn()"] { background-color: #2ed573; margin-top: 20px;} 
-
-        /* 3D CARD ANIMATION */
+        
         .card-container { position: relative; width: 280px; height: 380px; perspective: 1000px; margin: 20px auto; display: none; }
         .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; z-index: 5; }
         .card-container.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .card-front { background: repeating-linear-gradient(45deg, #2f3542, #2f3542 15px, #1e272e 15px, #1e272e 30px); color: #ffffff; font-size: 80px; border: 8px solid #ffffff; }
         .card-back { background-color: #ffffff; color: #ff4757; transform: rotateY(180deg); font-size: 26px; font-weight: bold; border: 8px solid #ff4757; }
-
-        /* SHUFFLE ANIMATION */
+        
         .dummy-card { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 1; opacity: 0; background: repeating-linear-gradient(45deg, #2f3542, #2f3542 15px, #1e272e 15px, #1e272e 30px); border: 8px solid #ffffff; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .shuffling .dummy-card { opacity: 1; }
         .shuffling .dummy-1 { animation: shuffle1 0.4s ease-in-out infinite; }
@@ -67,16 +32,20 @@
         @keyframes shuffle1 { 50% { transform: translate(-60px, -20px) rotate(-15deg); z-index: 6; } }
         @keyframes shuffle2 { 50% { transform: translate(60px, 10px) rotate(15deg); z-index: 6; } }
         @keyframes shuffle3 { 50% { transform: translate(-40px, 30px) rotate(-5deg); z-index: 6; } }
-
-        /* REACTION STYLES */
+        
         .reaction-btn { background: transparent; box-shadow: none; font-size: 32px; padding: 5px; margin: 0 5px; transition: transform 0.1s; cursor: pointer; border: none; }
         .reaction-btn:hover { transform: scale(1.2); }
         .reaction-btn:active { transform: scale(0.8); }
         .floating-emoji { position: fixed; bottom: 15%; font-size: 35px; pointer-events: none; animation: floatUp 2.5s ease-out forwards; z-index: 100; }
         @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-400px) scale(1.3); opacity: 0; } }
+
+        /* NEW: The Disconnect Warning Banner */
+        #disconnectWarning { display: none; background-color: #ff4757; color: white; padding: 15px; width: 100%; position: fixed; top: 0; left: 0; font-weight: bold; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
+    <div id="disconnectWarning">⚠️ Friend disconnected! Waiting up to 5 minutes for them to return...</div>
+    
     <h1>Truth or Dare!</h1>
 
     <div id="lobby">
@@ -108,7 +77,7 @@
         <h2 id="turnDisplay">Loading game...</h2>
         
         <div id="activePlayerControls" style="display:none;">
-            <button onclick="requestDare()">Draw a Dare!</button>
+            <button id="drawBtn" onclick="requestDare()">Draw a Dare!</button>
         </div>
 
         <div id="cardArea" class="card-container">
@@ -150,33 +119,88 @@
         const shuffleAudio = new Audio('shuffle.mp3');
         const flipAudio = new Audio('flip.mp3');
 
+        // --- NEW: THE SECRET ID SYSTEM ---
+        let mySecretId = sessionStorage.getItem('truthOrDare_SecretId');
+        if (!mySecretId) {
+            mySecretId = Math.random().toString(36).substring(2, 12); // Generate random string
+            sessionStorage.setItem('truthOrDare_SecretId', mySecretId);
+        }
+
+        // On page load, check if we were already in a room and try to sneak back in
+        const savedRoomCode = sessionStorage.getItem('truthOrDare_RoomCode');
+        if (savedRoomCode) {
+            socket.emit('reconnectPlayer', { roomCode: savedRoomCode, playerId: mySecretId });
+        }
+
+        // --- GAME OVER MEMORY WIPE ---
+        function clearMemory() {
+            sessionStorage.removeItem('truthOrDare_RoomCode');
+        }
+
         function createGame() { 
             const mode = document.getElementById('gameMode').value;
             const name = document.getElementById('playerNameInput').value;
             if(!name) return alert("Please enter your name first!");
-            socket.emit('createRoom', { mode: mode, name: name }); 
+            socket.emit('createRoom', { mode: mode, name: name, playerId: mySecretId }); 
         }
         
         function joinGame() { 
             const roomCode = document.getElementById('roomCodeInput').value.toUpperCase();
             const name = document.getElementById('playerNameInput').value;
             if(!name || !roomCode) return alert("Please enter your name and a Room Code!");
-            socket.emit('joinRoom', { roomCode: roomCode, name: name }); 
+            socket.emit('joinRoom', { roomCode: roomCode, name: name, playerId: mySecretId }); 
         }
 
         socket.on('roomCreated', (code) => {
+            sessionStorage.setItem('truthOrDare_RoomCode', code); // Save room to memory
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
             document.getElementById('displayRoomCode').innerText = code;
         });
 
         socket.on('gameReady', (playerNames) => {
+            sessionStorage.setItem('truthOrDare_RoomCode', document.getElementById('displayRoomCode').innerText || document.getElementById('roomCodeInput').value.toUpperCase());
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('setupArea').style.display = 'block';
             const myName = document.getElementById('playerNameInput').value;
             const allNames = Object.values(playerNames);
             const opponentName = allNames.find(n => n !== myName) || "Your friend";
             document.getElementById('statusMessage').innerText = `${opponentName} joined! Add your dares.`;
+        });
+
+        // --- RECONNECTION RESPONSES ---
+        socket.on('reconnectSuccess', (data) => {
+            document.getElementById('lobby').style.display = 'none';
+            if (data.gameState === 'setup') {
+                document.getElementById('setupArea').style.display = 'block';
+                document.getElementById('displayRoomCode').innerText = data.roomCode;
+            } else if (data.gameState === 'playing') {
+                document.getElementById('gameArena').style.display = 'block';
+            }
+        });
+
+        socket.on('reconnectFailed', () => {
+            clearMemory(); // Room was deleted, clear memory and stay in lobby
+            alert("Your previous game expired or was closed.");
+        });
+
+        socket.on('friendDisconnected', (name) => {
+            document.getElementById('disconnectWarning').style.display = 'block';
+            document.getElementById('drawBtn').disabled = true; // Pause the game
+        });
+
+        socket.on('friendReconnected', (name) => {
+            document.getElementById('disconnectWarning').style.display = 'none';
+            document.getElementById('drawBtn').disabled = false; // Unpause the game
+        });
+
+        socket.on('gameAbandoned', () => {
+            document.getElementById('disconnectWarning').style.display = 'none';
+            document.getElementById('turnDisplay').innerText = "Game Over! Your friend abandoned the match.";
+            document.getElementById('activePlayerControls').style.display = 'none';
+            document.getElementById('endTurnControls').style.display = 'none';
+            document.getElementById('cardArea').style.display = 'none';
+            clearMemory(); // Clean the phone's memory
         });
 
         function sendDaresToServer() {
@@ -203,7 +227,8 @@
             cardArea.style.display = 'block'; 
             document.getElementById('endTurnControls').style.display = 'none'; 
             
-            if (socket.id === activePlayerId) {
+            // We now check against our Secret ID instead of socket.id!
+            if (mySecretId === activePlayerId) {
                 isMyTurn = true;
                 document.getElementById('turnDisplay').innerText = `It is YOUR turn, ${activeName}!`;
                 document.getElementById('activePlayerControls').style.display = 'block'; 
@@ -258,6 +283,7 @@
             document.getElementById('activePlayerControls').style.display = 'none';
             document.getElementById('endTurnControls').style.display = 'none';
             document.getElementById('cardArea').style.display = 'none';
+            clearMemory(); // Game finished normally, wipe memory
         });
 
         function addExtraDare() {
